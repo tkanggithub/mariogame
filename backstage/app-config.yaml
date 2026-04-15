@@ -1,0 +1,82 @@
+app:
+  title: Mario Game Development Portal
+  baseUrl: http://localhost:3000
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+
+auth:
+  environment: development
+  providers:
+    guest: {}
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+  rules:
+    - allow: [Component, API, Resource, Group, User, Template]
+  locations:
+    - type: file
+      target: ./catalog-info.yaml
+      rules:
+        - allow: [Component, API, Resource, Group, User, Template]
+    - type: file
+      target: ./docs/team-catalog/**/*.yaml
+      rules:
+        - allow: [Group, User, Component]
+
+scaffolder:
+  tasks:
+    logsUpdateIntervallMs: 350
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'docker'
+  publisher:
+    type: 'local'
+
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+
+plugins:
+  - identity@backstage/core-plugin-install
+
+# Game-specific configuration
+game:
+  name: Mario Obstacle Game
+  version: 1.0.0
+  port: 3030
+  ruuviIntegration:
+    enabled: true
+    sensorInterval: 100  # ms
+    motionThreshold: 5
+  difficulty:
+    baseGravity: 0.8
+    baseJumpPower: 18
+    spawnRate: 70  # frames
+
+teams:
+  gameDev:
+    - name: Game Dev Team
+      members:
+        - email: tkanggithub@example.com
+          role: Lead Developer
+        - email: teammate1@example.com
+          role: Physics Engineer
+        - email: teammate2@example.com
+          role: UI/UX Designer

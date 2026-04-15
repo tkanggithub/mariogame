@@ -1,0 +1,37 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mario-obstacle-game
+  title: Super Mario Obstacle Game
+  description: Interactive web-based Super Mario game with obstacle jumping and mushroom avoidance mechanics. Built with Python Flask and vanilla JavaScript.
+  annotations:
+    github.com/project-slug: tkanggithub/mariogame
+    backstage.io/source-location: url:https://github.com/tkanggithub/mariogame
+  tags:
+    - game
+    - python
+    - javascript
+    - web
+    - interactive
+  links:
+    - url: http://localhost:3030
+      title: Live Game
+      icon: web
+    - url: https://github.com/tkanggithub/mariogame
+      title: GitHub Repository
+      icon: github
+    - url: https://github.com/tkanggithub/mariogame/issues
+      title: Issue Tracker
+      icon: tracking
+spec:
+  type: website
+  owner: game-dev-team
+  lifecycle: production
+  dependsOn:
+    - component:default/python-runtime
+    - component:default/nodejs-runtime
+  providesApis:
+    - mario-game-api
+  consumesApis:
+    - ruuvi-sensor-api
+  system: game-development-platform
