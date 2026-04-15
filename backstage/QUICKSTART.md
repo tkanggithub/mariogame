@@ -1,6 +1,33 @@
 # Backstage Quick Start - 5 Minutes to Portal
 
+## Step 0: Start Docker (if needed)
+
+**If you see "connect: no such file or directory" error, Docker daemon isn't running:**
+
+### macOS
+```bash
+# Start Docker from Applications folder, or:
+open -a Docker
+
+# Wait for Docker icon to appear in menu bar
+```
+
+### Ubuntu/Linux
+```bash
+# Start Docker daemon
+sudo systemctl start docker
+
+# Or with podman (if using podman instead):
+systemctl --user start podman.socket
+```
+
+### Windows
+- Open Docker Desktop application
+- Wait for it to fully load
+
 ## Step 1: Get GitHub Token (1 minute)
+
+**IMPORTANT: Do this FIRST before starting Backstage**
 
 1. Go to https://github.com/settings/tokens
 2. Click **"Generate new token (classic)"**
@@ -12,17 +39,36 @@
 5. Click **"Generate token"**
 6. **Copy the token** (you won't see it again!)
 
-## Step 2: Start Backstage (2 minutes)
+## Step 1.5: Set Token in Terminal (30 seconds)
 
-### Using Docker (Recommended)
+**In your terminal, before running anything:**
 
 ```bash
-cd backstage
-
-# For first time
+# Paste your token here:
 export GITHUB_TOKEN="ghp_your_token"
 
-# Start everything
+# Verify it worked:
+echo $GITHUB_TOKEN
+# Should show: ghp_...
+```
+
+**Keep this terminal open** when starting Backstage, or add to your shell:
+```bash
+# ~/.bashrc or ~/.zshrc
+export GITHUB_TOKEN="ghp_your_token"
+```
+
+## Step 2: Start Backstage (2 minutes)
+
+**Make sure Docker is running and GITHUB_TOKEN is set!**
+
+```bash
+# Verify token is set
+echo $GITHUB_TOKEN
+# Should show: ghp_...
+
+# Start Backstage
+cd backstage
 bash start.sh docker
 ```
 
@@ -33,24 +79,7 @@ bash start.sh docker
    Frontend: http://localhost:3000
 ```
 
-### Using Local Development
-
-```bash
-cd backstage
-
-# Create .env file
-cp .env.example .env
-# Edit .env and add your GITHUB_TOKEN
-
-# Install and start
-bash start.sh local
-```
-
-**Wait for:**
-```
-🚀 Frontend started at http://localhost:3000
-🚀 Backend started at http://localhost:7007
-```
+If you see errors about Docker/Podman, check the [Troubleshooting](#troubleshooting) section below.
 
 ## Step 3: Access Portal (1 minute)
 
@@ -112,6 +141,81 @@ spec:
 Then add to Backstage `catalog` config.
 
 ## Troubleshooting
+
+### "GITHUB_TOKEN variable is not set"
+**Problem:** You didn't set the token before starting
+
+**Solution:**
+```bash
+# Set the token in current terminal
+export GITHUB_TOKEN="ghp_your_token"
+
+# Verify it's set
+echo $GITHUB_TOKEN
+
+# Now start Backstage
+bash start.sh docker
+```
+
+### "unable to get image 'node:20-alpine'" or "no such file or directory"
+**Problem:** Docker daemon isn't running
+
+**Solution:**
+
+**macOS:**
+```bash
+# Start Docker Desktop app
+open -a Docker
+
+# Wait 30 seconds for it to fully load, see icon in menu bar
+# Then try again
+bash start.sh docker
+```
+
+**Ubuntu/Linux with systemd:**
+```bash
+# Start Docker
+sudo systemctl start docker
+
+# Verify it's running
+sudo docker ps
+
+# Try again
+bash start.sh docker
+```
+
+**Ubuntu/Linux with podman:**
+```bash
+# Start podman socket
+systemctl --user start podman.socket
+
+# Verify
+podman ps
+
+# Try again
+bash start.sh docker
+```
+
+**Windows:**
+- Open Docker Desktop application
+- Wait for it to fully start (icon appears in system tray)
+- Try again
+
+### Cannot connect to Docker API
+**Problem:** Docker socket permission or daemon not running
+
+**Solution:**
+```bash
+# Check if Docker is running
+docker ps
+
+# If not found, install Docker:
+# Visit: https://docs.docker.com/get-docker/
+
+# If permission denied, add user to docker group:
+sudo usermod -aG docker $USER
+# You may need to log out/in after this
+```
 
 ### Can't see Mario game component?
 1. Check `catalog-info.yaml` exists in repo root ✓

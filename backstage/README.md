@@ -13,13 +13,51 @@ This is a **Backstage Developer Portal** for the Mario Game development team. It
 
 ## Quick Start (2 minutes)
 
+### Step 0: Get GitHub Token
+
+**Required for any startup method:**
+
+1. Go to https://github.com/settings/tokens
+2. Click **"Generate new token (classic)"**
+3. Name it: `backstage-mario-game`
+4. Select scopes:
+   - ✅ `repo` - Full control of repositories
+   - ✅ `read:org` - Read org members and teams
+   - ✅ `read:user` - User profile data
+5. Click **"Generate token"**
+6. **Copy the token** (you won't see it again!)
+
+Then set it in your terminal:
+```bash
+export GITHUB_TOKEN="ghp_your_copied_token"
+```
+
+**Keep this terminal open** or add to your shell profile:
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export GITHUB_TOKEN="ghp_your_token"
+```
+
 ### Option 1: Docker (Recommended) ⭐
 
 **Fastest way to get started - everything in containers**
 
 ```bash
+# Make sure GITHUB_TOKEN is set first!
+echo $GITHUB_TOKEN   # Should show your token
+
 cd backstage
 bash start.sh docker
+```
+
+**Wait for this output:**
+```
+✅ Containers started!
+
+🌐 Access Backstage:
+   Frontend: http://localhost:3000
+   Backend:  http://localhost:7007
+   Game:     http://localhost:3030
 ```
 
 Then open:
@@ -32,17 +70,13 @@ Then open:
 **For hands-on development and debugging**
 
 ```bash
+# Make sure GITHUB_TOKEN is set first!
+echo $GITHUB_TOKEN   # Should show your token
+
 cd backstage
 
 # Install dependencies (one time)
 yarn install
-
-# Create .env file
-cat > .env << 'EOF'
-GITHUB_TOKEN=ghp_your_personal_access_token
-NODE_ENV=development
-LOG_LEVEL=debug
-EOF
 
 # Start in concurrent mode (frontend + backend)
 yarn dev

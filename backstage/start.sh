@@ -56,8 +56,43 @@ start_docker() {
     
     check_requirements "docker"
     
+    # Check for GITHUB_TOKEN
+    if [ -z "$GITHUB_TOKEN" ]; then
+        echo ""
+        echo -e "${YELLOW}⚠️  GITHUB_TOKEN not set!${NC}"
+        echo ""
+        echo "Get a GitHub token:"
+        echo "  1. Go to: https://github.com/settings/tokens"
+        echo "  2. Click: 'Generate new token (classic)'"
+        echo "  3. Select scopes: repo, read:org, read:user"
+        echo "  4. Copy the token"
+        echo ""
+        echo "Then set it and try again:"
+        echo "  export GITHUB_TOKEN=\"ghp_your_token_here\""
+        echo "  bash start.sh docker"
+        echo ""
+        exit 1
+    fi
+    
     echo -e "${YELLOW}📦 Building and starting containers...${NC}"
     docker-compose up -d
+    
+    # Check if containers started successfully
+    sleep 3
+    if ! docker-compose ps | grep -q backstage; then
+        echo ""
+        echo -e "${RED}❌ Failed to start containers${NC}"
+        echo ""
+        echo "Troubleshooting:"
+        echo "  1. Check Docker daemon is running:"
+        echo "     docker ps"
+        echo "  2. Check logs:"
+        echo "     docker-compose logs"
+        echo "  3. Try with verbose output:"
+        echo "     docker-compose up (without -d flag)"
+        echo ""
+        exit 1
+    fi
     
     echo ""
     echo -e "${GREEN}✅ Containers started!${NC}"
