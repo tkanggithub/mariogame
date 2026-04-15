@@ -1,0 +1,31 @@
+{
+  "name": "mario-backstage-portal",
+  "version": "1.0.0",
+  "description": "Backstage Developer Portal for Mario Game team collaboration",
+  "private": true,
+  "engines": {
+    "node": "18.x || 19.x || 20.x"
+  },
+  "scripts": {
+    "dev": "concurrently \"yarn start-backend\" \"yarn start-frontend\"",
+    "start": "yarn install && yarn build && yarn dev",
+    "start-backend": "cd packages/backend && yarn start",
+    "start-frontend": "cd packages/frontend && yarn start",
+    "build": "lerna run build",
+    "tsc": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "lerna run clean && lerna clean --yes && rm -rf .cache",
+    "test": "lerna run test"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.23.0",
+    "concurrently": "^8.0.0",
+    "lerna": "^7.0.0"
+  },
+  "dependencies": {}
+}

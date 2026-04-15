@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  backstage:
+    image: node:20-alpine
+    container_name: mario-backstage
+    working_dir: /app
+    ports:
+      - "3000:3000"
+      - "7007:7007"
+    environment:
+      - NODE_ENV=development
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - LOG_LEVEL=debug
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/packages/backend/node_modules
+      - /app/packages/frontend/node_modules
+    command: >
+      sh -c "yarn install && 
+             yarn build &&
+             yarn dev"
+    networks:
+      - mario-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7007/.well-known/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mario-backstage-db
+    environment:
+      - POSTGRES_DB=backstage
+      - POSTGRES_USER=backstage
+      - POSTGRES_PASSWORD=backstage
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mario-network
+
+  mario-game:
+    image: python:3.11-slim
+    container_name: mario-game-server
+    working_dir: /app
+    ports:
+      - "3030:3030"
+    volumes:
+      - ../:/app
+    command: python mario_game_ruuvi.py
+    networks:
+      - mario-network
+    depends_on:
+      - backstage
+
+volumes:
+  postgres_data:
+
+networks:
+  mario-network:
+    driver: bridge
