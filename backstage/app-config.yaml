@@ -1,9 +1,9 @@
 app:
   title: Mario Game Development Portal
-  baseUrl: http://localhost:3000
+  baseUrl: http://localhost:8000
 
 backend:
-  baseUrl: http://localhost:7007
+  baseUrl: http://localhost:8007
   listen:
     port: 7007
   csp:

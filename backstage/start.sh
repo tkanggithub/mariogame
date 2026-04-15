@@ -50,9 +50,9 @@ check_requirements() {
     fi
 }
 
-# Start with Docker
+# Start with Docker/Podman
 start_docker() {
-    echo -e "${BLUE}🐳 Starting Backstage with Docker...${NC}"
+    echo -e "${BLUE}🐳 Starting Backstage with Podman (rootless)...${NC}"
     
     check_requirements "docker"
     
@@ -74,39 +74,100 @@ start_docker() {
         exit 1
     fi
     
-    echo -e "${YELLOW}📦 Building and starting containers...${NC}"
-    docker-compose up -d
+    # Check if using podman
+    if command -v podman &> /dev/null; then
+        echo -e "${YELLOW}📍 Detected Podman (rootless mode)${NC}"
+        
+        # Check podman socket
+        if ! systemctl --user is-active --quiet podman.socket; then
+            echo ""
+            echo -e "${YELLOW}⚠️  Podman socket not running. Starting it...${NC}"
+            systemctl --user start podman.socket
+            
+            if ! systemctl --user is-active --quiet podman.socket; then
+                echo -e "${RED}❌ Failed to start podman.socket${NC}"
+                echo ""
+                echo "Try these commands:"
+                echo "  systemctl --user start podman.socket"
+                echo "  systemctl --user enable podman.socket"
+                echo ""
+                exit 1
+            fi
+            echo -e "${GREEN}✅ Podman socket started${NC}"
+        fi
+        
+        # Check cgroup version
+        CGROUP_VERSION=$(podman info | grep "cgroupVersion" | awk '{print $NF}')
+        echo -e "${YELLOW}📊 Cgroup version: ${CGROUP_VERSION}${NC}"
+        
+        # Change to backstage directory for compose
+        cd "$(dirname "$0")" || exit 1
+        
+        echo -e "${YELLOW}📦 Building and starting containers with podman-compose...${NC}"
+        
+        # Try podman-compose first, fall back to docker-compose
+        if command -v podman-compose &> /dev/null; then
+            podman-compose up -d
+        else
+            # Use docker-compose which will use podman
+            docker-compose up -d 2>&1 | grep -v "nodocker" || true
+        fi
+    else
+        echo -e "${YELLOW}📍 Using Docker${NC}"
+        docker-compose up -d
+    fi
     
     # Check if containers started successfully
     sleep 3
-    if ! docker-compose ps | grep -q backstage; then
-        echo ""
-        echo -e "${RED}❌ Failed to start containers${NC}"
-        echo ""
-        echo "Troubleshooting:"
-        echo "  1. Check Docker daemon is running:"
-        echo "     docker ps"
-        echo "  2. Check logs:"
-        echo "     docker-compose logs"
-        echo "  3. Try with verbose output:"
-        echo "     docker-compose up (without -d flag)"
-        echo ""
-        exit 1
+    
+    # Use podman or docker based on what's available
+    if command -v podman &> /dev/null; then
+        if ! podman ps | grep -q backstage; then
+            echo ""
+            echo -e "${RED}❌ Failed to start containers${NC}"
+            echo ""
+            echo "Troubleshooting:"
+            echo "  1. Check Podman status:"
+            echo "     podman ps"
+            echo "  2. Check logs:"
+            echo "     podman-compose logs (or docker-compose logs)"
+            echo "  3. Try with verbose output:"
+            echo "     podman-compose up (without -d flag)"
+            echo ""
+            exit 1
+        fi
+    else
+        if ! docker-compose ps | grep -q backstage; then
+            echo ""
+            echo -e "${RED}❌ Failed to start containers${NC}"
+            echo ""
+            echo "Troubleshooting:"
+            echo "  1. Check Docker status:"
+            echo "     docker ps"
+            echo "  2. Check logs:"
+            echo "     docker-compose logs"
+            echo "  3. Try with verbose output:"
+            echo "     docker-compose up (without -d flag)"
+            echo ""
+            exit 1
+        fi
     fi
     
     echo ""
     echo -e "${GREEN}✅ Containers started!${NC}"
     echo ""
     echo -e "${BLUE}🌐 Access Backstage:${NC}"
-    echo "   Frontend: http://localhost:3000"
-    echo "   Backend:  http://localhost:7007"
-    echo "   Game:     http://localhost:3030"
+    echo "   Frontend: http://localhost:8000"
+    echo "   Backend:  http://localhost:8007"
+    echo "   Game:     http://localhost:8030"
     echo ""
     echo -e "${BLUE}📊 Monitor logs:${NC}"
-    echo "   docker-compose logs -f"
+    echo "   podman-compose logs -f"
+    echo "   (or: docker-compose logs -f)"
     echo ""
     echo -e "${BLUE}🛑 Stop containers:${NC}"
-    echo "   docker-compose down"
+    echo "   podman-compose down"
+    echo "   (or: docker-compose down)"
     echo ""
 }
 

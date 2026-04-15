@@ -61,9 +61,11 @@ bash start.sh docker
 ```
 
 Then open:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:7007
-- **Game**: http://localhost:3030
+- **Frontend**: http://localhost:8000
+- **Backend API**: http://localhost:8007
+- **Game**: http://localhost:8030
+
+**Note:** These ports work with unprivileged user access (no sudo needed)
 
 ### Option 2: Local Development
 
@@ -196,10 +198,10 @@ The main configuration file includes:
 ```yaml
 app:
   title: Mario Game Development Portal
-  baseUrl: http://localhost:3000
+  baseUrl: http://localhost:8000
 
 backend:
-  baseUrl: http://localhost:7007
+  baseUrl: http://localhost:8007
 
 integrations:
   github:
@@ -224,13 +226,13 @@ game:
 - `catalog` - Component discovery settings
 - `game` - Mario-specific settings
 
-## Features & Usage
+### Features & Usage
 
 ### 1. **Component Catalog**
 
 View all team components (discoverable from `catalog-info.yaml`):
 
-1. Go to http://localhost:3000/catalog
+1. Go to http://localhost:8000/catalog
 2. Browse components:
    - **mario-obstacle-game** - Main game component
    - **Python Runtime** - Python dependencies
@@ -262,7 +264,7 @@ Find components, docs, and team members:
 
 Centralized documentation hosting:
 
-1. Go to http://localhost:3000/docs
+1. Go to http://localhost:8000/docs
 2. Browse team documentation
 3. Add docs via `mkdocs.yml` in repositories
 
@@ -279,7 +281,7 @@ plugins:
 
 Scaffolding for new features:
 
-1. Go to http://localhost:3000/create
+1. Go to http://localhost:8000/create
 2. Select a template
 3. Fill in form
 4. Generate repository or feature branch
@@ -288,7 +290,7 @@ Scaffolding for new features:
 
 View team members and their roles:
 
-1. Go to http://localhost:3000 (Home page)
+1. Go to http://localhost:8000 (Home page)
 2. See team roster from `app-config.yaml`
 3. GitHub integration auto-syncs org members
 

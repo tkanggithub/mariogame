@@ -1,31 +1,34 @@
 # Backstage Quick Start - 5 Minutes to Portal
 
-## Step 0: Start Docker (if needed)
+## Step 0: Setup Podman Rootless (1 minute)
 
-**If you see "connect: no such file or directory" error, Docker daemon isn't running:**
+**For unprivileged user access without sudo:**
 
-### macOS
 ```bash
-# Start Docker from Applications folder, or:
-open -a Docker
-
-# Wait for Docker icon to appear in menu bar
-```
-
-### Ubuntu/Linux
-```bash
-# Start Docker daemon
-sudo systemctl start docker
-
-# Or with podman (if using podman instead):
+# Start the podman socket for your user
 systemctl --user start podman.socket
+
+# Make it auto-start on login
+systemctl --user enable podman.socket
+
+# Verify it's running
+systemctl --user status podman.socket
 ```
 
-### Windows
-- Open Docker Desktop application
-- Wait for it to fully load
+If you need to install podman-compose:
+```bash
+# Install via pip (recommended)
+pip install podman-compose
 
-## Step 1: Get GitHub Token (1 minute)
+# Or via package manager
+apt install podman-compose        # Ubuntu/Debian
+brew install podman-compose       # macOS
+```
+
+**Cgroup Status:**
+The script will automatically detect your cgroup version (v1 or v2). Podman works with both!
+
+### Alternative: Start Docker service (if using Docker instead of Podman)
 
 **IMPORTANT: Do this FIRST before starting Backstage**
 
@@ -60,9 +63,13 @@ export GITHUB_TOKEN="ghp_your_token"
 
 ## Step 2: Start Backstage (2 minutes)
 
-**Make sure Docker is running and GITHUB_TOKEN is set!**
+**Make sure Podman socket is running and GITHUB_TOKEN is set!**
 
 ```bash
+# Verify podman socket is running
+systemctl --user status podman.socket
+# Should show: active (running)
+
 # Verify token is set
 echo $GITHUB_TOKEN
 # Should show: ghp_...
@@ -76,14 +83,23 @@ bash start.sh docker
 ```
 ✅ Containers started!
 🌐 Access Backstage:
-   Frontend: http://localhost:3000
+   Frontend: http://localhost:8000
+   Backend:  http://localhost:8007
+   Game:     http://localhost:8030
 ```
 
-If you see errors about Docker/Podman, check the [Troubleshooting](#troubleshooting) section below.
+The script automatically:
+- ✅ Detects Podman/Docker
+- ✅ Starts podman.socket if needed
+- ✅ Shows cgroup version (v1 or v2)
+- ✅ Builds and starts containers
+- ✅ Uses unprivileged user ports (no sudo needed)
+
+If you see errors about podman socket, check troubleshooting below.
 
 ## Step 3: Access Portal (1 minute)
 
-Open http://localhost:3000 in your browser
+Open http://localhost:8000 in your browser
 
 **You should see:**
 - 🏠 Home page with team info
@@ -100,7 +116,7 @@ Open http://localhost:3000 in your browser
 3. Click on it to see:
    - ✅ Component details
    - ✅ Owner (game-dev-team)
-   - ✅ Live game link (http://localhost:3030)
+   - ✅ Live game link (http://localhost:8030)
    - ✅ GitHub repository link
    - ✅ Dependencies and relationships
 
@@ -157,64 +173,57 @@ echo $GITHUB_TOKEN
 bash start.sh docker
 ```
 
-### "unable to get image 'node:20-alpine'" or "no such file or directory"
-**Problem:** Docker daemon isn't running
+### Podman socket not running
+**Problem:** "connect: no such file or directory" error
 
 **Solution:**
-
-**macOS:**
 ```bash
-# Start Docker Desktop app
-open -a Docker
-
-# Wait 30 seconds for it to fully load, see icon in menu bar
-# Then try again
-bash start.sh docker
-```
-
-**Ubuntu/Linux with systemd:**
-```bash
-# Start Docker
-sudo systemctl start docker
-
-# Verify it's running
-sudo docker ps
-
-# Try again
-bash start.sh docker
-```
-
-**Ubuntu/Linux with podman:**
-```bash
-# Start podman socket
+# Start podman socket for current user
 systemctl --user start podman.socket
 
-# Verify
-podman ps
+# Make it auto-start
+systemctl --user enable podman.socket
 
-# Try again
+# Verify it's running
+systemctl --user status podman.socket
+# Should show: active (running)
+
+# Now try again
 bash start.sh docker
 ```
 
-**Windows:**
-- Open Docker Desktop application
-- Wait for it to fully start (icon appears in system tray)
-- Try again
+### Podman socket issues on cgroup v1 systems
+**Problem:** Some older systems use cgroup v1 instead of v2
 
-### Cannot connect to Docker API
-**Problem:** Docker socket permission or daemon not running
+**Solution:**
+The script automatically detects your cgroup version and works with both!
+You can check your version:
+
+```bash
+# Check cgroup version
+podman info | grep -i cgroup
+
+# Or use this:
+grep cgroup2 /proc/mounts
+# If output is empty, you're on cgroup v1 (still works!)
+```
+
+Backstage works perfectly with both cgroup v1 and v2.
+
+### "unable to get image" error
+**Problem:** Container image download failed
 
 **Solution:**
 ```bash
-# Check if Docker is running
-docker ps
+# This usually means internet connectivity or DNS issues
+# Try pulling manually first
 
-# If not found, install Docker:
-# Visit: https://docs.docker.com/get-docker/
+podman pull node:20-alpine
+podman pull postgres:16-alpine
+podman pull python:3.11-slim
 
-# If permission denied, add user to docker group:
-sudo usermod -aG docker $USER
-# You may need to log out/in after this
+# Then try starting again
+bash start.sh docker
 ```
 
 ### Can't see Mario game component?
